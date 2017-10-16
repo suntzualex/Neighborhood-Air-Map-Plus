@@ -11,7 +11,7 @@ function AppViewModel() {
   self.noStations = ko.observable(false);
   self.airmeasurements = ko.observableArray();
   self.airmeasurements.subscribe(function(){
-     if(self.airmeasurements().length == 0){
+     if(self.airmeasurements().length === 0){
      self.noStations(true);
    } else {
      self.noStations(false);
@@ -100,7 +100,7 @@ function AppViewModel() {
   /* closing and opening of the help menu */
   self.helpActive = ko.observable(false);
   self.toggleHelp = function(){
-    if (self.helpActive() == true){
+    if (self.helpActive() === true){
       self.helpActive(false);
     } else {
       self.helpActive(true);
