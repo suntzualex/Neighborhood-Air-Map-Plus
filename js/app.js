@@ -82,6 +82,8 @@ function AppViewModel() {
    self.showStation = function(title){
      //var title = $(event.target).text();
      var marker = googleMap.getMarkerByTitle(title);
+     self.closeControlPanel();
+     self.levelMessage("");
      googleMap.activateMarker(marker);
    };
 
