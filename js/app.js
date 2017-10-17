@@ -3,6 +3,8 @@ var appViewModel = new AppViewModel(); // this app
 var googleMap = new GoogleMap(); // the map..
 var controlMap = new ControlMap(); // controller of map
 var airFilter = new Airfilter();
+var airmeasurementsMaster = [];
+// airemeasurementsMaster filled via API call only renew on update or reset.
 
 function AppViewModel() {
 
@@ -11,19 +13,23 @@ function AppViewModel() {
   self.noStations = ko.observable(false);
   self.airmeasurements = ko.observableArray();
   self.airmeasurements.subscribe(function(){
-     if(self.airmeasurements().length === 0){
+     if(self.airmeasurements().length == 0){
      self.noStations(true);
    } else {
      self.noStations(false);
    }
   });
   self.levelMessage = ko.observable("No Filter Set");
+  self.levelMessage.subscribe(function(){
+     // done with jquery is it possible doing this with KO.js?
+     $("#over-map").show().delay(2000).fadeOut('slow');
+  });
   self.updates = ko.observable(false);
   self.updates.subscribe(function(){
     if(self.updates()){
        autoUpdates = setInterval(function () {
        collectAirData();
-     }, 20000, true);
+     }, 20000, true); // update every 20 seconds.
       } else {
      clearInterval(autoUpdates);
       }
@@ -60,33 +66,32 @@ function AppViewModel() {
       controlMap.setFilter("pm10");
       message += "PM10";
     }
-    var selected = event.target.value;
     self.levelMessage(message);
-    self.singleUpdate();
+    self.updateFromMaster(airmeasurementsMaster);
+    // self.singleUpdate();
   };
-  // change into KO
-  self.openControlPanel = function(){
-    $("#controlPanel").css("width", "250px");
-    $("#controlMenu").hide();
-  };
-  // change into KO
-  self.closeControlPanel = function(){
-    $("#controlPanel").css("width", "0px");
-    $("#controlMenu").show();
-};
+  /*
+     function updates but does not call the API it uses the
+     existing master array: airmeasurementsMaster.
+  */
+   self.updateFromMaster = function(){
+      googleMap.centerMap();
+      filterNodes(airmeasurementsMaster);
+   };
 
-   self.showStation = function(){
-     var title = $(event.target).text();
+   self.showStation = function(title){
+     //var title = $(event.target).text();
      var marker = googleMap.getMarkerByTitle(title);
      googleMap.activateMarker(marker);
    };
 
+  // the update, really updates from API
   self.singleUpdate = function(){
     googleMap.centerMap();
     collectAirData();
   };
 
-  /* Reset the map */
+  /* Reset the map do an update with values from API */
   self.reset = function(){
     // clear filter.
     self.substanceLevelFilter("");
@@ -97,15 +102,40 @@ function AppViewModel() {
     collectAirData();
   };
 
+  /* opening or closing the control panel */
+  self.controlOpen = ko.observable(false);
+  self.openControlPanel = function(){
+    self.controlOpen(true);
+  };
+  self.closeControlPanel = function(){
+    self.controlOpen(false);
+  };
   /* closing and opening of the help menu */
   self.helpActive = ko.observable(false);
   self.toggleHelp = function(){
-    if (self.helpActive() === true){
+    if (self.helpActive() == true){
       self.helpActive(false);
     } else {
       self.helpActive(true);
     }
   };
+
+ko.bindingHandlers.openControls = {
+
+  init: function(element, valueAccessor){
+    var value = valueAccessor();
+    $(element).toggle(ko.unwrap(value));
+  },
+  update: function(element, valueAccessor){
+    var value = valueAccessor();
+    if (ko.unwrap(value)){
+      $(element).css("width", "250px");
+      $(element).css("display","block");
+    } else{
+      $(element).css("width", "0px");
+   }
+  }
+};
 
 ko.bindingHandlers.slideVisible = {
     init: function(element, valueAccessor) {
@@ -124,17 +154,18 @@ ko.bindingHandlers.slideVisible = {
 };
 
  /* setting the filter via the buttons */
-self.setFilter = function(element){
+self.setFilter = function(value){
    // clear the other filters
    self.substanceLevelFilter("");
    // get the id of the element as name of the substance.
-   var substance = event.target.id;
+   var substance = value;
    // show levels of this substance.
    controlMap.setFilter(substance);
    // show the message
    message = "Showing All Stations " + substance +  " Levels";
    self.levelMessage(message);
-   self.singleUpdate();
+   self.updateFromMaster(airmeasurementsMaster);
+   // self.singleUpdate();
  };
 
  /* Determine filter level and adapt the collection accordingly
@@ -218,13 +249,35 @@ self.passFilter = function(measurement){
     } // end of viewmodel
 
 /*
+   Filtering an existing array: airmeasurementsMaster
+   and putting that into the observable array airmeasurements.
+*/
+function filterNodes(airmeasurementsMaster){
+
+  appViewModel.airmeasurements([]);
+  airmeasurementsMaster.forEach(function(airmeasurement){
+  if(appViewModel.passFilter(airmeasurement)){
+      appViewModel.airmeasurements.push(airmeasurement);
+   }
+ });
+   // sort the objects by title.
+   appViewModel.airmeasurements.sort(function(a, b) {
+   var tA = parseInt(a.title.split(":")[1]);
+   var tB = parseInt(b.title.split(":")[1]);
+   return (tA < tB) ? - 1 : (tA > tB) ? 1 : 0;
+   });
+
+  controlMap.updateMap(googleMap, appViewModel.airmeasurements());
+}
+/*
   Important function for data collection via an external API.
   this is the core of the application.
 */
 function collectAirData(){
   // do the data collection with or without filter.
-  // make sure the array is empty.
-  appViewModel.airmeasurements([]);
+  // make sure the master array is empty.
+  airmeasurementsMaster = [];
+
 
   $.getJSON("http://data.aireas.com/api/v1/?airboxid=*")
     .done(function(data) {
@@ -251,25 +304,26 @@ function collectAirData(){
                                            ozon, pm1, pm10, pm25,
                                            relHum, temp, ufp,
                                            gps, name, utctimestamp, title);
-
-    /* add a filter function for the list view */
-    if(appViewModel.passFilter(airmeasurement)){
-        appViewModel.airmeasurements.push(airmeasurement);
-     }
-  });
-  // sort the objects by title.
-    appViewModel.airmeasurements.sort(function(a, b) {
-    var tA = parseInt(a.title.split(":")[1]);
-    var tB = parseInt(b.title.split(":")[1]);
-    return (tA < tB) ? - 1 : (tA > tB) ? 1 : 0;
-});
-    controlMap.updateMap(googleMap, appViewModel.airmeasurements());
+    // add measurements to master array.
+    airmeasurementsMaster.push(airmeasurement);
+    });
+    // display measurements through filter
+    filterNodes(airmeasurementsMaster);
 })
   .fail(function( jqxhr, textStatus, error ) {
     var err = textStatus + ", " + error;
     $("#error").append("Airmeasurement Data Could Not Be Loaded.");
     console.log( "Request Failed: " + err );
  });
+}
+
+/**
+  google maps error handler
+*/
+function googleMapError(){
+
+   $("error").innerHTML = "<h1>Google maps could not be loaded</h1>";
+
 }
 
 /**
