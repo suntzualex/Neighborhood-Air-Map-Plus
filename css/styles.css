@@ -65,7 +65,7 @@ html, body, #map {
 #over-map{
   position: absolute;
   top: 2%;
-  right: 50%;
+  left: 30%;
   font: 2em;
   width: 200px;
   background-color: ivory;
