@@ -13,10 +13,13 @@
 <body>
 	<div id="modal" title="help" data-bind="visible: !helpActive()">
 	</div>
-	<div id="controlMenu" data-bind="click: openControlPanel,
-	                                 visible: !helpActive()">&#9776; Controls
-																   </div>
-	<div id="controlPanel" class="control" data-bind="visible: !helpActive()">
+	<div id="controlMenu"
+	         data-bind="click: openControlPanel,
+					            visible: !helpActive() && !controlOpen()">
+											&#9776; Controls
+										  </div>
+	<div id="controlPanel" class="control" data-bind="visible: !helpActive(),
+	                                       openControls: controlOpen">
 		<a href="javascript:void(0)" class="closebtn"
 		   data-bind="click: closeControlPanel">&times;</a>
 		<input type="button" id="resetButton" class="btn btn-default btn-sm"
@@ -29,7 +32,7 @@
 	</div>
 	<label>Select Filter:</label>
 	<select id="airlist" data-bind="value: substanceLevelFilter,
-	                     event: { change: changeSubstanceLevel}">
+	                     event: { change: changeSubstanceLevel }">
 		<option value="">No filter selected</option>
 		<option value="oLow">Stations with low levels of ozone</option>
 		<option value="oMed">Stations with medium levels of ozone</option>
@@ -42,15 +45,15 @@
 		<option value="pHigh">Stations with high levels of pm10</option>
 	</select>
 	<input type="button" id="ozone" class="btn btn-default btn-sm"
-				 value="Display Ozone" data-bind="click: setFilter">
+				 value="Display Ozone" data-bind="click: setFilter.bind($data,'ozone')">
 	<input type="button" id="no2" class="btn btn-default btn-sm"
-			 	 value="Display NO2" data-bind="click: setFilter">
+			 	 value="Display NO2" data-bind="click: setFilter.bind($data,'no2')">
 	<input type="button" id="pm10" class="btn btn-default btn-sm"
-			 	 value="Display PM10" data-bind="click: setFilter">
+			 	 value="Display PM10" data-bind="click: setFilter.bind($data,'pm10')">
 	<label>Select Station:</label>
 	<span data-bind="visible: noStations">No Stations Found</span>
 	<ul id="stations" data-bind="foreach: airmeasurements">
-	<li data-bind="text: title, click: $root.showStation"></li>
+	<li data-bind="text: title, click: $root.showStation.bind($data, title)"></li>
 	</ul>
 </div><!-- end controls -->
 <div id="over-map" data-bind="text: levelMessage, visible: !helpActive()">
@@ -63,7 +66,7 @@
 	</div>
   <div id="map" data-bind="visible: !helpActive()">
 	</div>
-	<!-- help text  -------------------------------->
+	<!-- help text -->
 	<!-- an HTML snippet to show in help-menu -->
 	<div id="help-text" data-bind="slideVisible: helpActive">
 		<div class="modal-content">
@@ -80,6 +83,7 @@
 			<ul>
 				<li>Checkbox for Autoupdates: set an interval
 					  for updating automatically.</li>
+			</ul>
 	    <h4>Icon usage</h4>
 	    <p>Notice there are some measuring stations that are situated
 	    near another city: Breda.</p>
@@ -123,3 +127,4 @@
 	</script>
 </body>
 </html>
+
