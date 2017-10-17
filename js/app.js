@@ -322,11 +322,14 @@ function collectAirData(){
 /**
   google maps error handler
 */
-function googleMapError(){
-
-   $("error").innerHTML = "<h1>Google maps could not be loaded</h1>";
+function error(){
+   
+   $("#error").append("<h1>Google map could not be loaded</h1>");
+   $("#error").append("<p>Please check your connection and try again</p>");
 
 }
+
+
 
 /**
    initialize the map with center Eindhoven and
