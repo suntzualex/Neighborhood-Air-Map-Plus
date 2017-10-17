@@ -119,7 +119,7 @@
         marker.setAnimation(google.maps.Animation.BOUNCE);
         setTimeout(function () {
                    marker.setAnimation(null);
-                 }, 2000);
+                 }, 1400); // equal to two bounces
       }
         this.centerMapOn(marker.getPosition());
         infowindow.open(this.map, marker);
