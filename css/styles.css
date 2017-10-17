@@ -271,3 +271,11 @@ ul#stations li{
 ul#stations li:hover{
    background-color: #F9E79F;
 }
+
+#error{
+  color: red;
+  position: absolute;
+  top: 10%;
+  right: 20%;
+  margin: 5px;
+}
