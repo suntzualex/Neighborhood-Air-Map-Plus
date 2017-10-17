@@ -75,6 +75,10 @@ html, body, #map {
   z-index: 100;
 }
 
+#over-map:hover{
+  z-index: -100;
+}
+
 /* animate the over-map message */
 @keyframes flickerAnimation {
   0%   { opacity:0.8; }
