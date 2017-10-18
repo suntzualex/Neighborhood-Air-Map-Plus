@@ -63,9 +63,10 @@ html, body, #map {
 }
 
 #over-map{
+  display: none;
   position: absolute;
-  top: 2%;
-  left: 30%;
+  margin-top: 25px;
+  left: 33%;
   font: 2em;
   width: 200px;
   background-color: ivory;
@@ -73,10 +74,6 @@ html, body, #map {
   text-align: center;
   font-family: 'Roboto','sans-serif';
   z-index: 100;
-}
-
-#over-map:hover{
-  z-index: -100;
 }
 
 /* animate the over-map message */
