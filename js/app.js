@@ -314,7 +314,8 @@ function collectAirData(){
 })
   .fail(function( jqxhr, textStatus, error ) {
     var err = textStatus + ", " + error;
-    $("#error").append("Airmeasurement Data Could Not Be Loaded.");
+    $("#error").show().append("Airmeasurement Data Could Not Be Loaded.");
+    setTimeout(function() { $("#error").hide(); }, 3000);
     console.log( "Request Failed: " + err );
  });
 }
@@ -323,13 +324,10 @@ function collectAirData(){
   google maps error handler
 */
 function error(){
-   
-   $("#error").append("<h1>Google map could not be loaded</h1>");
-   $("#error").append("<p>Please check your connection and try again</p>");
-
+   $("#error").show().append("<h1>Google map could not be loaded</h1>");
+   $("#error").show().append("<p>Please check your connection and try again</p>");
+   setTimeout(function() { $("#error").hide(); }, 3000);
 }
-
-
 
 /**
    initialize the map with center Eindhoven and
